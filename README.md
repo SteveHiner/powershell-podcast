@@ -36,4 +36,4 @@ Run the script again:
 
 It will fetch your podcasts' feeds and start downloading audio files.
 
-To periodically download more podcasts, periodically run the script again.
+To periodically download more podcasts, periodically run the script again.  A separate CSV file is created for each subscription to track which files have been downloaded.  This means that the script will never download an audio file more than once.  You can safely delete old files once you're done listening to them.
