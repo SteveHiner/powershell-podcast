@@ -59,7 +59,13 @@ function Main {
         # For example, if the absolute max is 6, you already have 5 downloaded, and 3 more new podcasts have appeared in the feed,
         # we should only download one more.  Only after older ones have been deleted can we download more without exceeding our absolute max limit.
 
-        $entriesToDownload = ($allEntries | where { isNo $_.ListenedTo })[0..($maxDownloaded - 1)] | where { isNo $_.Downloaded }
+        if($maxDownloaded -le 0) {
+            $entriesToDownload = @()
+        } else {
+            $entriesToDownload = ($allEntries | where { isNo $_.ListenedTo })[0..($maxDownloaded - 1)] | where { isNo $_.Downloaded }
+            # Coerce it to an array, in case a single value was returned
+            $entriesToDownload = @($entriesToDownload)
+        }
 
         # Make the podcast output directory if it doesn't exist
         $directory = "./podcasts/$($subscription.Directory)"
@@ -67,8 +73,8 @@ function Main {
             mkdir $directory
         }
 
-        if ($entriesToDownload.length -gt 0) {
-            Write-Output "Downloading $($entriesToDownload.length) podcast$(if($entriesToDownload.length -gt 1) {"s"}) for $($subscription.Name)..."
+        if ($entriesToDownload.Count -gt 0) {
+            Write-Output "Downloading $($entriesToDownload.Count) podcast$(if($entriesToDownload.Count -gt 1) {"s"}) for $($subscription.Name)..."
         }
 
         # Download each podcast into this podcast's directory and mark it as downloaded in the CSV
