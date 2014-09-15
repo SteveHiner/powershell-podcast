@@ -12,13 +12,31 @@ function Main {
 
     # Read the list of subscriptions
     $subscriptions = Get-Content ./subscriptions.csv | ConvertFrom-Csv
+    
+    # Make the feed cache directory if it doesn't exist
+    if((Test-Path "./feeds") -eq $false) {
+        mkdir "./feeds"
+    }
+
 
     foreach($subscription in $subscriptions) {
         
-        Write-Output "Fetching feed for $($subscription.Name)..."
+        $feedPath = "./feeds/$($subscription.Directory).xml"
+        if((Test-Path $feedPath) -and (Get-Item $feedPath).LastWriteTimeUtc.AddHours(1) -gt [DateTime]::Now.ToUniversalTime()) {
+            Write-Output "Loading cached feed for $($subscription.Name)..."
+            
+            # Fetch the feed from disk
+            $feedContent  = Get-Content $feedPath
+        } else {
+            Write-Output "Downloading feed for $($subscription.Name)..."
         
-        # Download the feed and parse it as XML
-        [xml]$feed = Invoke-WebRequest $subscription.URL
+            # Download the feed
+            $feedContent = Invoke-WebRequest $subscription.URL
+            $feedContent | Set-Content $feedPath
+        }
+        
+        # Parse the feed as XML
+        [xml]$feed = $feedContent
 
         # Load the list of existing entries for this podcast from the filesystem
         $existingEntriesPath = "./podcasts/$($subscription.directory).csv"
