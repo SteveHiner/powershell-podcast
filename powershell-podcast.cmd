@@ -3,4 +3,4 @@
 :: requiring the end-user to change their PowerShell execution
 :: policy to something more sensible than the default Restricted.
 
-@powershell -ExecutionPolicy Bypass -File main.ps1 %*
+@powershell -ExecutionPolicy Bypass -File powershell-podcast.ps1 %*

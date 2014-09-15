@@ -12,7 +12,7 @@ Place the main script in an empty directory.  It will store configuration and do
 
 Run it from the command-line:
 ```
-> .\main.ps1
+> .\powershell-podcast
 ```
 
 It will create an empty `subscriptions.csv` file.  Open this file in your favorite spreadsheet software.
@@ -31,7 +31,7 @@ Add a few rows for the podcasts you want to subscribe to, and save the file.
 
 Run the script again:
 ```
-.\main.ps1
+.\powershell-podcast
 ```
 
 It will fetch your podcasts' feeds and start downloading audio files.
