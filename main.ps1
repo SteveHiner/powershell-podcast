@@ -141,17 +141,17 @@ function createPodcastEntry {
         Date=""
         URL=""
         Filename=""
-        Downloaded=$false
-        ListenedTo=$false
+        Downloaded="No"
+        ListenedTo="No"
     }
 }
 
 function isNo($yesOrNoString) {
-    $yesOrNoString -Match "^[^Yy]"
+    (isYes $yesOrNoString) -eq $False
 }
 
 function isYes($yesOrNoString) {
-    $yesOrNoString -Match "^[Yy]"
+    $yesOrNoString -IMatch "^\s*(y|yes|true)\s*$"
 }
 
 $invalidFileNameChars = [System.IO.Path]::GetInvalidFileNameChars()
