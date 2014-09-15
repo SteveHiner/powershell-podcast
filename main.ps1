@@ -42,13 +42,13 @@ function Main {
 
         # A strange way to concatenate in PowerShell
         # Also, remove null values
-        $allEntries = Write-Output $newEntries $existingEntries | where { $_ } | Sort-Object -Property Date -Descending
+        $allEntries = Write-Output $newEntries $existingEntries | where { $_ }
+        
+        # Sort all entries by date, with newest entries at the top
+        $allEntries = $allEntries | Sort-Object -Property Date -Descending
 
         # write the CSV to disc
         writeEntriesToDisc $allEntries $existingEntriesPath
-
-        # Sort the list of entries by date
-        # TODO implement
 
         # Based on user preferences for this podcast, figure out which new entries must be downloaded
         $maxDownloaded = [int]$subscription.DownloadQuantity
