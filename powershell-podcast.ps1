@@ -125,31 +125,71 @@ function writeEntriesToDisc($allEntries, $path) {
 }
 
 function createPodcastEntriesFromFeedXml($xml) {
+    $namespaces = @{
+        atom= "http://www.w3.org/2005/Atom"
+        rss= ""
+    }
     # Create and return an array of PodcastEntry from all the items in this XML dom
-    $entryNodes = Select-Xml -XPath "//item" -Xml $feed
-    $entryNodes | % {
-        $entryNode = $_.Node
-        $entry = createPodcastEntry
-        $entry.Title = (Select-Xml -XPath "title/text()" -Xml $entryNode).Node.InnerText
-        
-        # Parse the publication date and format it as a UTC string
-        $date = (Select-Xml -XPath "pubDate/text()" -Xml $entryNode).Node.InnerText
-        $entry.Date = (parseDate $date).ToUniversalTime().ToString('yyyy-MM-ddThh:mm:ss.fffK')
-        
-        $entry.URL = (Select-Xml -XPath "enclosure/@url" -Xml $entryNode).Node.Value
-
-        # Use the <item>'s <guid> element.  If it's not present, fall back to using the download URL as a GUID.
-        $guid = (Select-Xml -XPath "guid/text()" -Xml $entryNode).Node.InnerText
-        if($guid -eq $null) {
-            $guid = $entry.URL
+    # TODO use $feed.SelectSingleNode() ?
+    $namespace = (Select-Xml -XPath "/*" -Xml $feed).node.NamespaceURI
+    if($namespace -ceq $namespaces.rss) {
+        # Parse an RSS feed
+        $entryNodes = Select-Xml -XPath "//item" -Xml $feed
+        $entryNodes | % {
+            $entryNode = $_.Node
+            $entry = createPodcastEntry
+            $entry.Title = (Select-Xml -XPath "title/text()" -Xml $entryNode).Node.InnerText
+            
+            # Parse the publication date and format it as a UTC string
+            $date = (Select-Xml -XPath "pubDate/text()" -Xml $entryNode).Node.InnerText
+            $entry.Date = (parseDate $date).ToUniversalTime().ToString('yyyy-MM-ddThh:mm:ss.fffK')
+            
+            $entry.URL = (Select-Xml -XPath "enclosure/@url" -Xml $entryNode).Node.Value
+    
+            # Use the <item>'s <guid> element.  If it's not present, fall back to using the download URL as a GUID.
+            $guid = (Select-Xml -XPath "guid/text()" -Xml $entryNode).Node.InnerText
+            if($guid -eq $null) {
+                $guid = $entry.URL
+            }
+            $entry.GUID = $guid
+            
+            # TODO make this more robust?
+            # If the mimetype is not audio/mpeg, do not make it .mp3?
+            # If the URL has a file extension at the end, use that?
+            $entry.filename = "$(sanitizeFilename $entry.title).mp3"
+            return $entry
         }
-        $entry.GUID = $guid
-        
-        # TODO make this more robust?
-        # If the mimetype is not audio/mpeg, do not make it .mp3?
-        # If the URL has a file extension at the end, use that?
-        $entry.filename = "$(sanitizeFilename $entry.title).mp3"
-        return $entry
+    } elseif($namespace -ceq $namespaces.atom) {
+        # Parse an Atom feed
+        $entryNodes = Select-Xml -XPath "//atom:entry" -Namespace $namespaces -Xml $feed
+        $entryNodes | %{
+            $entryNode = $_.Node
+            $entry = createPodcastEntry
+            $entry.Title = (Select-Xml -XPath "atom:title/text()" -Xml $entryNode -Namespace $namespaces).Node.InnerText
+            
+            # Parse the publication date and format it as a UTC string
+            $date = (Select-Xml -XPath "atom:updated/text()" -Xml $entryNode -Namespace $namespaces).Node.InnerText
+            $entry.Date = ([DateTime]$date).ToUniversalTime().ToString('yyyy-MM-ddThh:mm:ss.fffK')
+            
+            $entry.URL = (Select-Xml -XPath "atom:link[@rel=`"enclosure`"]/@href" -Xml $entryNode -Namespace $namespaces).Node.Value
+            
+            # Use the <entry>'s <id> element.  If it's not present, fall back to using the download URL as a GUID.
+            $guid = (Select-Xml -XPath "atom:id/text()" -Xml $entryNode -Namespace $namespaces).Node.InnerText
+            if($guid -eq $null) {
+                $guid = $entry.URL
+            }
+            $entry.GUID = $guid
+            
+            # TODO make this more robust?
+            # If the mimetype is not audio/mpeg, do not make it .mp3?
+            # If the URL has a file extension at the end, use that?
+            $entry.filename = "$(sanitizeFilename $entry.title).mp3"
+            return $entry
+        }
+    } else {
+        # Unknown feed type; log an error
+        Write-Error "Podcast feed is not in a recognized format.  Skipping..."
+        return $null
     }
 }
 
