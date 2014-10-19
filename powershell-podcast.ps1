@@ -97,6 +97,7 @@ function Main {
 
         # Download each podcast into this podcast's directory and mark it as downloaded in the CSV
         foreach($entryToDownload in $entriesToDownload) {
+            Write-Output "* $($entryToDownload.Title)"
             $filename = "$directory/$($entryToDownload.Filename)"
             Invoke-WebRequest $entryToDownload.URL -OutFile $filename
             $entryToDownload.Downloaded = "Yes"
