@@ -15,7 +15,7 @@ function Main {
     
     # Make the feed cache directory if it doesn't exist
     if((Test-Path "./feeds") -eq $false) {
-        mkdir "./feeds"
+        mkdir "./feeds" >$null
     }
 
 
@@ -88,7 +88,7 @@ function Main {
         # Make the podcast output directory if it doesn't exist
         $directory = "./podcasts/$($subscription.Directory)"
         if((Test-Path $directory) -eq $false) {
-            mkdir $directory
+            mkdir $directory >$null
         }
 
         if ($entriesToDownload.Count -gt 0) {
