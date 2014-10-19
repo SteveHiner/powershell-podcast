@@ -138,7 +138,7 @@ function createPodcastEntriesFromFeedXml($xml) {
         $entryNodes | % {
             $entryNode = $_.Node
             $entry = createPodcastEntry
-            $entry.Title = (Select-Xml -XPath "title/text()" -Xml $entryNode).Node.InnerText
+            $entry.Title = (Select-Xml -XPath "title/text()" -Xml $entryNode).Node.InnerText.Trim()
             
             # Parse the publication date and format it as a UTC string
             $date = (Select-Xml -XPath "pubDate/text()" -Xml $entryNode).Node.InnerText
@@ -165,7 +165,7 @@ function createPodcastEntriesFromFeedXml($xml) {
         $entryNodes | %{
             $entryNode = $_.Node
             $entry = createPodcastEntry
-            $entry.Title = (Select-Xml -XPath "atom:title/text()" -Xml $entryNode -Namespace $namespaces).Node.InnerText
+            $entry.Title = (Select-Xml -XPath "atom:title/text()" -Xml $entryNode -Namespace $namespaces).Node.InnerText.Trim()
             
             # Parse the publication date and format it as a UTC string
             $date = (Select-Xml -XPath "atom:updated/text()" -Xml $entryNode -Namespace $namespaces).Node.InnerText
