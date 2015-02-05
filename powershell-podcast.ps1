@@ -97,9 +97,13 @@ function Main {
 
         # Download each podcast into this podcast's directory and mark it as downloaded in the CSV
         foreach($entryToDownload in $entriesToDownload) {
-            Write-Output "* $($entryToDownload.Title)"
+            # Invoke-WebRequest's -OutFile doesn't deal with wildcard paths or escaped wildcard paths correctly.
+            # Therefore we write to a temp file first (with a boring path that does not look anything like a wildcard path)
+            # and then we move that temp file to the proper destination.
             $filename = "$directory/$($entryToDownload.Filename)"
-            Invoke-WebRequest $entryToDownload.URL -OutFile $filename
+            $tempFilePath = [system.io.path]::GetTempFileName()
+            Invoke-WebRequest $entryToDownload.URL -OutFile $tempFilePath
+            Move-Item -LiteralPath $tempFilePath -Destination $filename
             $entryToDownload.Downloaded = "Yes"
             
             # Write the CSV to disc
@@ -220,6 +224,15 @@ function sanitizeFilename($name) {
         # TODO perform url-encode-style percent-encoding
         # TODO use linq aggregate function to do all this find-and-replace
         $ret = $ret -Replace [regex]::Escape($char),"_"
+    }
+    return $ret
+}
+
+$pathWildcardChars = "[", "]"
+function escapeWildcardsInPath($name) {
+    $ret = $name
+    foreach($char in $pathWildcardChars) {
+        $ret = $ret -Replace [regex]::Escape($char),"``$char"
     }
     return $ret
 }
