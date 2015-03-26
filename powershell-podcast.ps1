@@ -101,6 +101,7 @@ function Main {
 
         # Download each podcast into this podcast's directory and mark it as downloaded in the CSV
         foreach($entryToDownload in $entriesToDownload) {
+            Write-Output "* $($entryToDownload.Title)"
             # Invoke-WebRequest's -OutFile doesn't deal with wildcard paths or escaped wildcard paths correctly.
             # Therefore we write to a temp file first (with a boring path that does not look anything like a wildcard path)
             # and then we move that temp file to the proper destination.
