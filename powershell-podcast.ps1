@@ -89,9 +89,9 @@ function Main {
             $entriesToDownload = @($entriesToDownload)
         }
 
-        # Make the podcast output directory if it doesn't exist
+        # Make the podcast output directory if it doesn't exist and if we are actually going to download some podcasts
         $directory = "./podcasts/$($subscription.Directory)"
-        if((Test-Path $directory) -eq $false) {
+        if(((Test-Path $directory) -eq $false) -and ($entriesToDownload.Count -gt 0)) {
             mkdir $directory >$null
         }
 
