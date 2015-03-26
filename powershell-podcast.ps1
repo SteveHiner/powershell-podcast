@@ -1,5 +1,9 @@
 $ErrorActionPreference = "Stop"
 
+# Disable progress bars for Invoke-WebRequest
+# Apparently this makes those requests faster.
+$ProgressPreference = "SilentlyContinue"
+
 function Main {
 
     # CD into the directory where this script resides
