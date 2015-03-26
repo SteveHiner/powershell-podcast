@@ -106,7 +106,7 @@ function Main {
             # and then we move that temp file to the proper destination.
             $filename = "$directory/$($entryToDownload.Filename)"
             $tempFilePath = [system.io.path]::GetTempFileName()
-            Invoke-WebRequest $entryToDownload.URL -OutFile $tempFilePath
+            Invoke-WebRequest $entryToDownload.URL -Method GET -OutFile $tempFilePath
             Move-Item -LiteralPath $tempFilePath -Destination $filename
             $entryToDownload.Downloaded = "Yes"
             
