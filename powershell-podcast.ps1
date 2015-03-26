@@ -265,6 +265,8 @@ function parseDate($date) {
     foreach($abbrev in $timezones.Keys) {
         $acc = $acc -replace "$abbrev$",$timezones[$abbrev]
     }
+    # Remove the day-of-week prefix entirely.  It's redundant, and if the feed got it wrong, it'll cause a date parsing error.
+    $acc = $acc -replace "^[A-Z][a-z]+, ",""
     [DateTime]$acc
 }
 
