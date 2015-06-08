@@ -101,14 +101,18 @@ function Main {
 
         # Download each podcast into this podcast's directory and mark it as downloaded in the CSV
         foreach($entryToDownload in $entriesToDownload) {
-            Write-Output "* $($entryToDownload.Title)"
-            # Invoke-WebRequest's -OutFile doesn't deal with wildcard paths or escaped wildcard paths correctly.
-            # Therefore we write to a temp file first (with a boring path that does not look anything like a wildcard path)
-            # and then we move that temp file to the proper destination.
-            $filename = "$directory/$($entryToDownload.Filename)"
-            $tempFilePath = [system.io.path]::GetTempFileName()
-            Invoke-WebRequest $entryToDownload.URL -Method GET -OutFile $tempFilePath
-            Move-Item -LiteralPath $tempFilePath -Destination $filename
+            if (($entryToDownload.URL -eq $null) -or ($entryToDownload.URL.Length -eq 0)) {
+                Write-Output "** Skipping `"$($entryToDownload.Title)`": No URL to download"
+            } else {
+                Write-Output "* $($entryToDownload.Title)"
+                # Invoke-WebRequest's -OutFile doesn't deal with wildcard paths or escaped wildcard paths correctly.
+                # Therefore we write to a temp file first (with a boring path that does not look anything like a wildcard path)
+                # and then we move that temp file to the proper destination.
+                $filename = "$directory/$($entryToDownload.Filename)"
+                $tempFilePath = [system.io.path]::GetTempFileName()
+                Invoke-WebRequest $entryToDownload.URL -Method GET -OutFile $tempFilePath
+                Move-Item -LiteralPath $tempFilePath -Destination $filename
+            }
             $entryToDownload.Downloaded = "Yes"
             
             # Write the CSV to disc
