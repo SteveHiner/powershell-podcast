@@ -181,7 +181,12 @@ function createPodcastEntriesFromFeedXml($xml) {
             $entry.Title = (Select-Xml -XPath "atom:title/text()" -Xml $entryNode -Namespace $namespaces).Node.InnerText.Trim()
             
             # Parse the publication date and format it as a UTC string
-            $date = (Select-Xml -XPath "atom:updated/text()" -Xml $entryNode -Namespace $namespaces).Node.InnerText
+            $node = Select-Xml -XPath "atom:updated/text()" -Xml $entryNode -Namespace $namespaces
+            # If <updated> isn't present, check for <published>
+            if($node -eq $null) {
+                $node = Select-Xml -XPath "atom:published/text()" -Xml $entryNode -Namespace $namespaces
+            }
+            $date = $node.Node.InnerText
             $entry.Date = ([DateTime]$date).ToUniversalTime().ToString('yyyy-MM-ddThh:mm:ss.fffK')
             
             $entry.URL = (Select-Xml -XPath "atom:link[@rel=`"enclosure`"]/@href" -Xml $entryNode -Namespace $namespaces).Node.Value
